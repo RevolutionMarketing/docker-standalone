@@ -1,6 +1,10 @@
 services:
   web:
     image: nginx:latest
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     env_file: .env
     ports:
       - "${LHC_PUBLIC_PORT}:80"
@@ -19,6 +23,10 @@ services:
   php:
     build: ./Dockerfiles/php
     image: remdex/livehelperchat-php:latest
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     env_file: .env
     volumes:
       - ./livehelperchat/lhc_web:/code
@@ -32,6 +40,10 @@ services:
   cobrowse:
     build: ./Dockerfiles/cobrowse
     image: remdex/livehelperchat-cobrowse:latest
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     ports:
       - 127.0.0.1:31130:31130
     networks:
@@ -40,6 +52,10 @@ services:
   php-cronjob:
     build: ./Dockerfiles/cronjob
     image: remdex/livehelperchat-php-cronjob:latest
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     env_file: .env
     volumes:
       - ./livehelperchat/lhc_web:/code
@@ -53,6 +69,10 @@ services:
   php-resque:
     build: ./Dockerfiles/php-resque
     image: remdex/livehelperchat-php-resque:latest
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     env_file: .env
     volumes:
       - ./livehelperchat/lhc_web:/code
@@ -69,6 +89,10 @@ services:
   nodejshelper:
     build: ./Dockerfiles/nodejshelper
     image: remdex/livehelperchat-nodejshelper:latest
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     env_file: .env
     depends_on:
       - redis
@@ -77,11 +101,19 @@ services:
     restart: always
   redis:
     image: "redis:alpine"
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     networks:
       - code-network
     restart: always
   db:
     image: mariadb
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     env_file: .env
     environment:
       TZ: UTC
