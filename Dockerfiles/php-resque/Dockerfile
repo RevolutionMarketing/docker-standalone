@@ -1,31 +1,45 @@
-FROM php:8.4-fpm
+FROM php:8.2-fpm
 
-ENV DEBIAN_FRONTEND noninteractive
-ENV TAG 3.43v
+# Evita richieste interattive
+ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-cache search bcmath
+# Aggiorna e installa le dipendenze
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    cron \
+    procps \
+    zlib1g-dev \
+    curl \
+    libzip-dev \
+    libonig-dev \
+    libpng-dev \
+    libwebp-dev \
+    libjpeg62-turbo-dev \
+    libxpm-dev \
+    libfreetype6-dev \
+    libc-client-dev \
+    libkrb5-dev \
+    libldap2-dev \
+    imagemagick \
+    libmagickwand-dev \
+    libheif-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ \
+    && docker-php-ext-install -j$(nproc) \
+        sockets \
+        bcmath \
+        pcntl \
+        zip \
+        mbstring \
+        mysqli \
+        pdo \
+        pdo_mysql \
+        opcache \
+        ldap \
+        gd \
+    && pecl install redis && docker-php-ext-enable redis \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-ADD lhc/cron /etc/cron.d/lhc
-
-RUN chmod 0644 /etc/cron.d/lhc
-
-# Create the log file to be able to run tail
-RUN touch /var/log/cron.log
-
-# Run the command on container startup
-
-RUN apt update && \
-    apt -qy install git unzip cron procps zlib1g-dev curl libzip-dev libonig-dev libpng-dev libwebp-dev libjpeg62-turbo-dev libxpm-dev libfreetype6-dev libc-client-dev libkrb5-dev libldap2-dev imagemagick libmagickwand-dev libheif-dev && \
-    docker-php-ext-install sockets bcmath pcntl zip mbstring mysqli pdo pdo_mysql opcache ldap && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN pecl install imap && docker-php-ext-enable imap
-RUN pecl install imagick && docker-php-ext-enable imagick
-
-RUN docker-php-ext-configure gd --with-webp --with-jpeg --with-xpm --with-freetype
-RUN docker-php-ext-install gd
-
-RUN pecl install redis && docker-php-ext-enable redis
-
-CMD ["cron", "-f"]
+WORKDIR /code
